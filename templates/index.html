@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Solar System Simulator</title>
+
+    <style>
+        body {
+            margin: 0;
+            background: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        h2 {
+            margin: 10px;
+        }
+
+        canvas {
+            background: radial-gradient(circle, #111, #000);
+            display: block;
+            margin: auto;
+            border: 1px solid #222;
+        }
+
+        .controls {
+            margin: 10px;
+        }
+
+        button, input {
+            padding: 8px;
+            margin: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Solar System Simulation</h2>
+
+<div class="controls">
+    <button onclick="toggle()">Play / Pause</button>
+
+    Speed:
+    <input type="range" min="1" max="100" value="20" id="speed">
+</div>
+
+<canvas id="space" width="800" height="600"></canvas>
+
+<script>
+let canvas = document.getElementById("space");
+let ctx = canvas.getContext("2d");
+
+let running = true;
+let speed = 20;
+
+document.getElementById("speed").oninput = (e) => {
+    speed = e.target.value;
+};
+
+function toggle() {
+    running = !running;
+}
+
+function drawSun() {
+    ctx.beginPath();
+    ctx.arc(400, 300, 20, 0, Math.PI * 2);
+    ctx.fillStyle = "yellow";
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = "yellow";
+    ctx.fill();
+    ctx.shadowBlur = 0;
+}
+
+function drawOrbits() {
+    let radii = [60, 90, 130, 170, 220];
+
+    ctx.strokeStyle = "#333";
+
+    for (let r of radii) {
+        ctx.beginPath();
+        ctx.arc(400, 300, r, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+}
+
+function drawPlanets(planets) {
+    for (let p of planets) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+
+        ctx.fillStyle = "white";
+        ctx.fillText(p.name, p.x + 8, p.y + 8);
+    }
+}
+
+async function update() {
+    if (running) {
+        let res = await fetch("/planets");
+        let planets = await res.json();
+
+        ctx.clearRect(0, 0, 800, 600);
+
+        drawSun();
+        drawOrbits();
+        drawPlanets(planets);
+    }
+
+    setTimeout(update, 50);
+}
+
+update();
+</script>
+
+</body>
+</html>
